@@ -117,13 +117,11 @@ installDependent(){
 }
 
 setupCron() {
-    if [[ `crontab -l 2>/dev/null|grep acme` ]]; then
-        if [[ -z `crontab -l 2>/dev/null|grep trojan-web` || `crontab -l 2>/dev/null|grep trojan-web|grep "&"` ]]; then
             #计算北京时间早上3点时VPS的实际时间
             ORIGIN_TIME_ZONE=$(date -R|awk '{printf"%d",$6}')
             LOCAL_TIME_ZONE=${ORIGIN_TIME_ZONE%00}
             BEIJING_ZONE=8
-            BEIJING_UPDATE_TIME=3
+            BEIJING_UPDATE_TIME=4
             DIFF_ZONE=$[$BEIJING_ZONE-$LOCAL_TIME_ZONE]
             LOCAL_TIME=$[$BEIJING_UPDATE_TIME-$DIFF_ZONE]
             if [ $LOCAL_TIME -lt 0 ];then
@@ -131,12 +129,12 @@ setupCron() {
             elif [ $LOCAL_TIME -ge 24 ];then
                 LOCAL_TIME=$[$LOCAL_TIME-24]
             fi
+                LOCAL_TIME2=$[$LOCAL_TIME+1]
             crontab -l 2>/dev/null|sed '/acme.sh/d' > crontab.txt
             echo "0 ${LOCAL_TIME}"' * * * systemctl stop trojan-web; "/root/.acme.sh"/acme.sh --cron --home "/root/.acme.sh" > /dev/null; systemctl start trojan-web' >> crontab.txt
+            echo "0 ${LOCAL_TIME2} * * * /sbin/reboot" >> crontab.txt
             crontab crontab.txt
             rm -f crontab.txt
-        fi
-    fi
 }
 
 installTrojan(){
@@ -175,7 +173,31 @@ installTrojan(){
         colorEcho $GREEN "更新trojan管理程序成功!\n"
     fi
     setupCron
-    [[ $SHOW_TIP == 1 ]] && echo "浏览器访问'`colorEcho $BLUE https://域名`'可在线trojan多用户管理"
+      setupCron
+      sleep 1
+      while true;
+      do
+      read -r -p "是否安装加速? [Y/N] " input
+      case $input in
+           [yY][eE][sS]|[yY])
+	   echo "正在安装加速"
+                  wget -N --no-check-certificate "https://raw.githubusercontent.com/chenshuo-as/Linux-NetSpeed/master/tcpx.sh" && chmod +x tcpx.sh && ./tcpx.sh
+		  #echo "net.core.default_qdisc=cake" >> /etc/sysctl.conf
+	          #echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
+	          #sysctl -p
+	   break	   
+		;;
+           [nN][oO]|[nN])
+	   echo "不安装加速"
+	   echo "浏览器访问'`colorEcho $BLUE https://域名`'可在线trojan多用户管理"
+	   break
+          	;;
+
+             *)
+	    echo "输入错误"
+		;;
+       esac
+     done
 }
 
 main(){

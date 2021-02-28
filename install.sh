@@ -173,31 +173,7 @@ installTrojan(){
         colorEcho $GREEN "更新trojan管理程序成功!\n"
     fi
     setupCron
-      setupCron
-      sleep 1
-      while true;
-      do
-      read -r -p "是否安装加速? [Y/N] " input
-      case $input in
-           [yY][eE][sS]|[yY])
-	   echo "正在安装加速"
-                  wget -N --no-check-certificate "https://raw.githubusercontent.com/chenshuo-as/Linux-NetSpeed/master/tcpx.sh" && chmod +x tcpx.sh && ./tcpx.sh
-		  #echo "net.core.default_qdisc=cake" >> /etc/sysctl.conf
-	          #echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
-	          #sysctl -p
-	   break	   
-		;;
-           [nN][oO]|[nN])
-	   echo "不安装加速"
-	   echo "浏览器访问'`colorEcho $BLUE https://域名`'可在线trojan多用户管理"
-	   break
-          	;;
-
-             *)
-	    echo "输入错误"
-		;;
-       esac
-     done
+    [[ $SHOW_TIP == 1 ]] && echo "浏览器访问'`colorEcho $BLUE https://域名`'可在线trojan多用户管理"
 }
 
 main(){
